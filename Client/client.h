@@ -16,6 +16,7 @@ public:
 public slots:
     void slotReadyRead();
     void sendToServer(QString str);
+    void login(QString name, QString password);
 private:
     QTcpSocket* m_socket;
     QByteArray m_data;

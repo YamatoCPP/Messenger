@@ -9,10 +9,9 @@ DataBaseManager::DataBaseManager()
     m_users.setDatabaseName("./../../Usersdb");
     m_messages = QSqlDatabase::addDatabase("QSQLITE", "Messagesdb");
     m_messages.setDatabaseName("./../../Messagesdb");
-    getPass("12");
 }
 
-void DataBaseManager::getPass(QString name)
+bool DataBaseManager::tryLogin(QString name, QString password)
 {
     m_users.open();
     QSqlQuery getpass("SELECT Password FROM Users WHERE Name == '" + name + "'",
@@ -20,12 +19,18 @@ void DataBaseManager::getPass(QString name)
     if (getpass.exec())
     {
         getpass.next();
-        qDebug() << "Yes, " + getpass.value(0).toString();
+        QString pass = getpass.value(0).toString();
+        if (!pass.isEmpty() && pass == password)
+        {
+            m_users.close();
+            return true;
+        }
     }
     else
     {
-        qDebug() << "No";
+        qDebug() << "Query error!";
     }
     m_users.close();
+    return false;
 }
 

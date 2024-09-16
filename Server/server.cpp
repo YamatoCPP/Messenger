@@ -7,6 +7,7 @@
 Server::Server()
 {
     listen(QHostAddress::LocalHost, 2222);
+    m_dbManager = new DataBaseManager();
 }
 
 void Server::incomingConnection(qintptr socketDescriptor)
@@ -19,27 +20,43 @@ void Server::incomingConnection(qintptr socketDescriptor)
 }
 void Server::slotReadyRead()
 {
+    qDebug() << "Get message";
+
     m_socket = (QTcpSocket*)sender();
     QDataStream in(m_socket);
     if (in.status() == QDataStream::Ok)
     {
-        QString str;
-        in >> str;
-        if (str == "")
+        qint8 code;
+        in >> code;
+        QVariantList args;
+        if (code == 0)
         {
-            qDebug() << "Data error!";
-            return;
+            QString str;
+            in >> str;
+            args.push_back(str);
         }
-        sendToClient(str);
-        qDebug() << str + " sended";
+        if (code == 1)
+        {
+            QString name;
+            QString password;
+            in >> name >> password;
+            args.push_back(m_dbManager->tryLogin(name, password));
+        }
+        sendToClient(code, args);
     }
 }
 
-void Server::sendToClient(QString str)
+void Server::sendToClient(qint8 code, const QVariantList& args)
 {
     m_data.clear();
+    qDebug() << code << args;
+
     QDataStream out(&m_data, QIODevice::WriteOnly);
-    out << str;
+    out << code;
+    if (code == 0)
+        out << args[0].toString();
+    else
+        out << args[0].toBool();
     for (int i = 0; i < m_sockets.size(); ++i)
     {
         m_sockets[i]->write(m_data);

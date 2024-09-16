@@ -19,9 +19,24 @@ Client::Client(QObject* parent)
 
     m_windows->addWidget(loginForm);
     m_windows->addWidget(mainWindow);
+
     QObject::connect(mainWindow, &MainWindow::sendToServer, this, &Client::sendToServer);
-    m_windows->setCurrentIndex(1);
+    QObject::connect(loginForm, &LoginForm::login, this, &Client::login);
+
+    m_windows->setCurrentIndex(0);
     m_windows->show();
+}
+
+void Client::login(QString name, QString password)
+{
+    qDebug() << "try login with " + name + " " + password;
+
+    m_data.clear();
+    QDataStream out(&m_data, QIODevice::WriteOnly);
+    qint8 code = 1;
+    out << code << name << password;
+
+    m_socket->write(m_data);
 }
 
 void Client::slotReadyRead()
@@ -29,16 +44,36 @@ void Client::slotReadyRead()
     QDataStream in(m_socket);
     if (in.status() == QDataStream::Ok)
     {
-        QString str;
-        in >> str;
-        MainWindow* mainWindow = (MainWindow*)m_windows->widget(1);
-        mainWindow->addMessage(str);
+        qint8 code;
+        in >> code;
+        if (code == 0)
+        {
+            QString str;
+            in >> str;
+            MainWindow* mainWindow = (MainWindow*)m_windows->widget(1);
+            mainWindow->addMessage(str);
+        }
+        else
+        {
+            bool isLogin;
+            in >> isLogin;
+            if (isLogin)
+            {
+                m_windows->setCurrentIndex(1);
+            }
+            else
+            {
+                qDebug() << "Hui";
+            }
+        }
     }
 }
 
 void Client::sendToServer(QString str)
 {
+    m_data.clear();
     QDataStream out(&m_data, QIODevice::WriteOnly);
-    out << str;
+    qint8 code = 0;
+    out << code << str;
     m_socket->write(m_data);
 }

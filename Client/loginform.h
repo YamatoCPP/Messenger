@@ -2,6 +2,7 @@
 #define LOGINFORM_H
 
 #include <QWidget>
+#include <QString>
 
 namespace Ui {
 class LoginForm;
@@ -14,10 +15,10 @@ class LoginForm : public QWidget
 public:
     explicit LoginForm(QWidget *parent = nullptr);
     ~LoginForm();
-
+signals:
+    void login(QString name, QString password);
 private slots:
     void on_pushButton_clicked();
-
 private:
     Ui::LoginForm *ui;
 };

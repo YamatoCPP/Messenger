@@ -8,8 +8,8 @@ class DataBaseManager
 {
 public:
     DataBaseManager();
+    bool tryLogin(QString name, QString password);
 private:
-    void getPass(QString);
     QSqlDatabase m_users;
     QSqlDatabase m_messages;
 };

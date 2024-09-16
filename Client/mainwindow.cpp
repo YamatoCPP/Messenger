@@ -12,12 +12,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->label->setAlignment(Qt::AlignTop);
 
     setFixedSize(500,800);
-
 }
 
 void MainWindow::addMessage(QString str)
 {
-    ui->label->setText(":" + ui->label->text() + str + "\n");
+    ui->label->setText(ui->label->text() + str + "\n");
 }
 
 void MainWindow::on_pushButton_clicked()
