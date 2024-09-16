@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-
+#include "loginform.h"
 #include <QHostAddress>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -12,33 +12,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->label->setAlignment(Qt::AlignTop);
 
     setFixedSize(500,800);
-    m_socket = new QTcpSocket(this);
-    m_socket->connectToHost(QHostAddress::Any, 2222);
-    connect(m_socket, &QTcpSocket::readyRead, this, &MainWindow::slotReadyRead);
+
 }
 
-void MainWindow::slotReadyRead()
+void MainWindow::addMessage(QString str)
 {
-    QDataStream in(m_socket);
-    if (in.status() == QDataStream::Ok)
-    {
-        QString str;
-        in >> str;
-        ui->label->setText(ui->label->text() + str + "\n");
-    }
-}
-
-void MainWindow::sendToServer(QString str)
-{
-    QDataStream out(&m_data, QIODevice::WriteOnly);
-    out << str;
-    m_socket->write(m_data);
-    ui->lineEdit->clear();
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
+    ui->label->setText(":" + ui->label->text() + str + "\n");
 }
 
 void MainWindow::on_pushButton_clicked()
@@ -54,3 +33,7 @@ void MainWindow::on_lineEdit_returnPressed()
     sendToServer(ui->lineEdit->text());
 }
 
+MainWindow::~MainWindow()
+{
+    delete ui;
+}

@@ -38,6 +38,8 @@ else()
     else()
         add_executable(Client
             ${PROJECT_SOURCES}
+            loginform.h loginform.cpp loginform.ui
+            client.h client.cpp
         )
     endif()
 endif()

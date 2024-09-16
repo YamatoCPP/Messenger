@@ -5,6 +5,7 @@
 #include <QTcpSocket>
 #include <QByteArray>
 #include <QString>
+#include <QStackedWidget>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -19,17 +20,15 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-public slots:
-    void slotReadyRead();
+    void addMessage(QString str);
+
+signals:
+    void sendToServer(QString str);
 private slots:
     void on_pushButton_clicked();
-
     void on_lineEdit_returnPressed();
 
 private:
-    void sendToServer(QString str);
-    QTcpSocket* m_socket;
-    QByteArray m_data;
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
