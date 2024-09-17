@@ -9,6 +9,7 @@ class DataBaseManager
 public:
     DataBaseManager();
     bool tryLogin(QString name, QString password);
+    bool tryRegistration(QString name, QString password);
 private:
     QSqlDatabase m_users;
     QSqlDatabase m_messages;

@@ -17,8 +17,11 @@ public:
     ~LoginForm();
 signals:
     void login(QString name, QString password);
+    void toRegistrForm();
 private slots:
     void on_pushButton_clicked();
+    void on_pushButton_2_clicked();
+
 private:
     Ui::LoginForm *ui;
 };

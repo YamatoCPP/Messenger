@@ -24,3 +24,8 @@ void LoginForm::on_pushButton_clicked()
     }
 }
 
+void LoginForm::on_pushButton_2_clicked()
+{
+    toRegistrForm();
+}
+

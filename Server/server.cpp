@@ -34,19 +34,28 @@ void Server::slotReadyRead()
             QString str;
             in >> str;
             args.push_back(str);
+            sendToAll(code, args);
         }
-        if (code == 1)
+        else if (code == 1)
         {
             QString name;
             QString password;
             in >> name >> password;
             args.push_back(m_dbManager->tryLogin(name, password));
+            sendToClient(code, m_socket, args);
         }
-        sendToClient(code, args);
+        else if (code == 2)
+        {
+            QString name;
+            QString password;
+            in >> name >> password;
+            args.push_back(m_dbManager->tryRegistration(name, password));
+            sendToClient(code, m_socket, args);
+        }
     }
 }
 
-void Server::sendToClient(qint8 code, const QVariantList& args)
+void Server::sendToAll(qint8 code, const QVariantList& args)
 {
     m_data.clear();
     qDebug() << code << args;
@@ -54,11 +63,25 @@ void Server::sendToClient(qint8 code, const QVariantList& args)
     QDataStream out(&m_data, QIODevice::WriteOnly);
     out << code;
     if (code == 0)
+    {
         out << args[0].toString();
-    else
-        out << args[0].toBool();
+    }
     for (int i = 0; i < m_sockets.size(); ++i)
     {
         m_sockets[i]->write(m_data);
+    }
+}
+
+void Server::sendToClient(qint8 code, QTcpSocket* client, const QVariantList& args)
+{
+    m_data.clear();
+    qDebug() << code << args;
+
+    QDataStream out(&m_data, QIODevice::WriteOnly);
+    out << code;
+    if (code == 1 || code == 2)
+    {
+        out << args[0].toBool();
+        client->write(m_data);
     }
 }

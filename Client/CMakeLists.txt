@@ -40,6 +40,7 @@ else()
             ${PROJECT_SOURCES}
             loginform.h loginform.cpp loginform.ui
             client.h client.cpp
+            registration.h registration.cpp registration.ui
         )
     endif()
 endif()

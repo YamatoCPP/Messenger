@@ -19,7 +19,8 @@ public slots:
     void slotReadyRead();
     void incomingConnection(qintptr socketDescriptor);
 private:
-    void sendToClient(qint8 code, const QVariantList& args);
+    void sendToAll(qint8 code, const QVariantList& args);
+    void sendToClient(qint8 code, QTcpSocket* client, const QVariantList& args);
     QTcpSocket* m_socket;
     QByteArray m_data;
     QVector<QTcpSocket*> m_sockets;

@@ -23,6 +23,7 @@ void MainWindow::on_pushButton_clicked()
 {
     if (ui->lineEdit->text() == "") return;
     sendToServer(ui->lineEdit->text());
+    ui->lineEdit->clear();
 }
 
 
@@ -30,6 +31,7 @@ void MainWindow::on_lineEdit_returnPressed()
 {
     if (ui->lineEdit->text() == "") return;
     sendToServer(ui->lineEdit->text());
+    ui->lineEdit->clear();
 }
 
 MainWindow::~MainWindow()
