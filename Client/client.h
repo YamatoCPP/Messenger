@@ -22,6 +22,7 @@ private:
     QTcpSocket* m_socket;
     QByteArray m_data;
     QStackedWidget* m_windows;
+    QString m_userName;
 };
 
 #endif // CLIENT_H

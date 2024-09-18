@@ -42,6 +42,7 @@ void Client::login(QString name, QString password)
     qint8 code = 1;
     out << code << name << password;
 
+    m_userName = name;
     m_socket->write(m_data);
 }
 
@@ -107,6 +108,6 @@ void Client::sendToServer(QString str)
     m_data.clear();
     QDataStream out(&m_data, QIODevice::WriteOnly);
     qint8 code = 0;
-    out << code << str;
+    out << code << m_userName + ": " + str;
     m_socket->write(m_data);
 }
