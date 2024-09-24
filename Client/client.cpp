@@ -68,17 +68,23 @@ void Client::slotReadyRead()
         {
             QString str;
             in >> str;
+            qDebug() << code << str;
             MainWindow* mainWindow = (MainWindow*)m_windows->widget(2);
             mainWindow->addMessage(str);
         }
         else if (code == 1)
         {
             bool isLogin;
+            QString str;
             in >> isLogin;
+            in >> str;
             qDebug() << isLogin;
+
             if (isLogin)
             {
                 m_windows->setCurrentIndex(2);
+                MainWindow* mainWindow = (MainWindow*)m_windows->widget(2);
+                mainWindow->addMessage(str);
             }
             else
             {
@@ -108,6 +114,6 @@ void Client::sendToServer(QString str)
     m_data.clear();
     QDataStream out(&m_data, QIODevice::WriteOnly);
     qint8 code = 0;
-    out << code << m_userName + ": " + str;
+    out << code << m_userName << str;
     m_socket->write(m_data);
 }

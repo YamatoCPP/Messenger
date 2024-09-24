@@ -58,3 +58,45 @@ bool DataBaseManager::tryRegistration(QString name, QString password)
     m_users.close();
     return isRegist;
 }
+
+void DataBaseManager::addMessage(QString name, QString text)
+{
+    m_messages.open();
+    QSqlQuery addMessage(m_messages);
+    addMessage.prepare("INSERT INTO Messages(Name, Text) VALUES(:name, :text)");
+    addMessage.bindValue(":name", name);
+    addMessage.bindValue(":text", text);
+
+    if (!addMessage.exec())
+    {
+        qDebug() << "dbManager: Add Message error";
+    }
+
+    m_messages.close();
+}
+
+QString DataBaseManager::get100Message()
+{
+    m_messages.open();
+    QSqlQuery getMessage(m_messages);
+    getMessage.prepare("SELECT Name, Text FROM Messages");
+
+    QString messages;
+    if (getMessage.exec())
+    {
+        while (getMessage.next()) {
+            messages.push_back(getMessage.value(0).toString()
+                            + ": "
+                            + getMessage.value(1).toString()
+                            + "\n");
+        }
+    }
+    else
+    {
+        qDebug() << "Get message error";
+
+    }
+    qDebug() << messages;
+    m_messages.close();
+    return messages;
+}

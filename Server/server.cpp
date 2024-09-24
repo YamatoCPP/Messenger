@@ -31,9 +31,13 @@ void Server::slotReadyRead()
         QVariantList args;
         if (code == 0)
         {
-            QString str;
-            in >> str;
-            args.push_back(str);
+            qDebug() << "Get message";
+            QString name;
+            QString text;
+            in >> name;
+            in >> text;
+            args.push_back(QString(name + ": " + text));
+            m_dbManager->addMessage(name, text);
             sendToAll(code, args);
         }
         else if (code == 1)
@@ -41,7 +45,17 @@ void Server::slotReadyRead()
             QString name;
             QString password;
             in >> name >> password;
-            args.push_back(m_dbManager->tryLogin(name, password));
+            bool isLogin = m_dbManager->tryLogin(name, password);
+            args.push_back(isLogin);
+            if (isLogin)
+            {
+                qDebug() << "Login";
+                args.push_back(m_dbManager->get100Message());
+            }
+            else
+            {
+                args.push_back("");
+            }
             sendToClient(code, m_socket, args);
         }
         else if (code == 2)
@@ -58,14 +72,12 @@ void Server::slotReadyRead()
 void Server::sendToAll(qint8 code, const QVariantList& args)
 {
     m_data.clear();
-    qDebug() << code << args;
+    qDebug() << "send to all " << code << args;
 
     QDataStream out(&m_data, QIODevice::WriteOnly);
     out << code;
-    if (code == 0)
-    {
-        out << args[0].toString();
-    }
+    out << args[0].toString();
+
     for (int i = 0; i < m_sockets.size(); ++i)
     {
         m_sockets[i]->write(m_data);
@@ -79,9 +91,14 @@ void Server::sendToClient(qint8 code, QTcpSocket* client, const QVariantList& ar
 
     QDataStream out(&m_data, QIODevice::WriteOnly);
     out << code;
-    if (code == 1 || code == 2)
+    if (code == 0)
+    {
+        out << args[0].toString();
+    }
+    else if (code == 1 || code == 2)
     {
         out << args[0].toBool();
-        client->write(m_data);
+        out << args[1].toString();
     }
+    client->write(m_data);
 }
