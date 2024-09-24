@@ -9,9 +9,14 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->label->setStyleSheet("QLabel {background-color : white;}");
+    ui->lineEdit->setStyleSheet("background-color : white;");
+    ui->pushButton->setStyleSheet("background-color : white;");
     ui->label->setAlignment(Qt::AlignTop);
 
-    setFixedSize(500,800);
+    QIcon icon("Images/Icon.png");
+    setWindowIcon(icon);
+
+    setStyleSheet("background-color : violet;");
 }
 
 void MainWindow::addMessage(QString str)

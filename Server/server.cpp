@@ -95,10 +95,14 @@ void Server::sendToClient(qint8 code, QTcpSocket* client, const QVariantList& ar
     {
         out << args[0].toString();
     }
-    else if (code == 1 || code == 2)
+    else if (code == 1)
     {
         out << args[0].toBool();
         out << args[1].toString();
+    }
+    else if (code == 2)
+    {
+        out << args[0].toBool();
     }
     client->write(m_data);
 }

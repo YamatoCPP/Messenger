@@ -1,12 +1,15 @@
 #include "loginform.h"
 #include "ui_loginform.h"
 
+#include <QHBoxLayout>
+#include <QPalette>
+#include <QColor>
+
 LoginForm::LoginForm(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::LoginForm)
 {
     ui->setupUi(this);
-    setFixedSize(500,500);
 }
 
 LoginForm::~LoginForm()
