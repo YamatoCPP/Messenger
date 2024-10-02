@@ -8,32 +8,39 @@
 #include <QObject>
 #include <QHostAddress>
 #include <QIcon>
+#include <QVector>
 
-Client::Client(QWidget* parent)
-    : QStackedWidget(parent)
+Client::Client(QObject* parent)
+    : QObject(parent)
 {
-    setStyleSheet("background-color : violet");
-    setWindowIcon(QIcon("./../../Images/Icon.ico"));
+    m_windows = new QStackedWidget;
+    m_windows->setStyleSheet("background: qlineargradient(x1:0, y1:0, x2:1, y2:1); ");
+    m_windows->setWindowIcon(QIcon("./../../Images/Icon.ico"));
 
     m_socket = new QTcpSocket(this);
-    m_socket->connectToHost(QHostAddress::Any, 2222);
+    m_socket->connectToHost(QHostAddress::Any, 8080);
+
+    if (!m_socket->waitForConnected())
+    {
+        qDebug() << "Not connect\n";
+    }
     QObject::connect(m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
 
     MainWindow* mainWindow = new MainWindow();
     LoginForm* loginForm = new LoginForm();
     RegistrationForm* registrationForm = new RegistrationForm();
 
-    addWidget(loginForm);
-    addWidget(registrationForm);
-    addWidget(mainWindow);
+    m_windows->addWidget(loginForm);
+    m_windows->addWidget(registrationForm);
+    m_windows->addWidget(mainWindow);
 
     QObject::connect(mainWindow, &MainWindow::sendToServer, this, &Client::sendToServer);
     QObject::connect(loginForm, &LoginForm::login, this, &Client::login);
-    QObject::connect(loginForm, &LoginForm::toRegistrForm, [&](){ setCurrentIndex(1); });
+    QObject::connect(loginForm, &LoginForm::toRegistrForm, [this](){ m_windows->setCurrentIndex(1); });
     QObject::connect(registrationForm, &RegistrationForm::registration, this, &Client::registration);
 
-    setCurrentIndex(0);
-    show();
+    m_windows->setCurrentIndex(0);
+    m_windows->show();
 }
 
 void Client::login(QString name, QString password)
@@ -69,23 +76,30 @@ void Client::slotReadyRead()
         in >> code;
         if (code == 0)
         {
-            QString str;
-            in >> str;
-            qDebug() << code << str;
-            ((MainWindow*)widget(2))->addMessage(str);
+            QString msg;
+            in >> msg;
+            ((MainWindow*)m_windows->widget(2))->addMessage(msg);
         }
         else if (code == 1)
         {
             bool isLogin;
-            QString str;
             in >> isLogin;
-            in >> str;
-            qDebug() << isLogin;
 
             if (isLogin)
             {
-                setCurrentIndex(2);
-                ((MainWindow*)widget(2))->addMessage(str);
+                int size;
+                in >> size;
+                qDebug() << size;
+                QString str;
+                for (int i = 0; i < size; ++i)
+                {
+                    in >> str;
+                    if (!str.isEmpty())
+                    {
+                        ((MainWindow*)m_windows->widget(2))->addMessage(str);
+                    }
+                }
+                m_windows->setCurrentIndex(2);
             }
             else
             {
@@ -99,12 +113,12 @@ void Client::slotReadyRead()
             qDebug() << isRegist;
             if (isRegist)
             {
-                setCurrentIndex(0);
-                ((RegistrationForm*)widget(1))->setError("");
+                m_windows->setCurrentIndex(0);
+                ((RegistrationForm*)m_windows->widget(1))->setError("");
             }
             else
             {
-                ((RegistrationForm*)widget(1))->setError("Не удалось зарегаться");
+                ((RegistrationForm*)m_windows->widget(1))->setError("Не удалось зарегаться");
             }
         }
     }

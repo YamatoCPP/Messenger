@@ -7,12 +7,11 @@
 #include <QStackedWidget>
 #include <QString>
 #include <QObject>
-#include <QWidget>
 
-class Client : public QStackedWidget
+class Client : public QObject
 {
 public:
-    Client(QWidget* parent = nullptr);
+    Client(QObject* parent = nullptr);
 
 public slots:
     void slotReadyRead();
@@ -23,6 +22,7 @@ private:
     QTcpSocket* m_socket;
     QByteArray m_data;
     QString m_userName;
+    QStackedWidget* m_windows;
 };
 
 #endif // CLIENT_H

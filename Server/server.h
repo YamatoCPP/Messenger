@@ -9,6 +9,7 @@
 #include <QByteArray>
 #include <QString>
 #include <QVariantList>
+#include <QVariant>
 
 class Server : public QTcpServer
 {

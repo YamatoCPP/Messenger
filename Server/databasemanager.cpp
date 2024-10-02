@@ -75,18 +75,18 @@ void DataBaseManager::addMessage(QString name, QString text)
     m_messages.close();
 }
 
-QString DataBaseManager::get100Message()
+QVector<QString> DataBaseManager::get100Message()
 {
     m_messages.open();
     QSqlQuery getMessage(m_messages);
     getMessage.prepare("SELECT Name, Text FROM Messages");
 
-    QString messages;
+    QVector<QString> messages;
     if (getMessage.exec())
     {
         while (getMessage.next()) {
             messages.push_back(getMessage.value(0).toString()
-                            + ": "
+                            + ":\n"
                             + getMessage.value(1).toString()
                             + "\n");
         }

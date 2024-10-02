@@ -6,6 +6,14 @@ RegistrationForm::RegistrationForm(QWidget *parent) :
     ui(new Ui::RegistrationForm)
 {
     ui->setupUi(this);
+    ui->nameline->setStyleSheet("background-color : white; ");
+    ui->passwordline->setStyleSheet("background-color : white; ");
+    ui->passwordline2->setStyleSheet("background-color : white; ");
+    ui->errorlbl->setStyleSheet("background-color: rgba(255,255,255,0);");
+    ui->namelbl->setStyleSheet("background-color: rgba(255,255,255,0);");
+    ui->passwordlbl->setStyleSheet("background-color: rgba(255,255,255,0);");
+    ui->passwordlbl2->setStyleSheet("background-color: rgba(255,255,255,0);");
+    ui->registrationbtn->setStyleSheet("background-color: rgba(255,255,255,0);");
 }
 
 RegistrationForm::~RegistrationForm()

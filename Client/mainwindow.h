@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "message.h"
+
 #include <QMainWindow>
 #include <QTcpSocket>
 #include <QByteArray>

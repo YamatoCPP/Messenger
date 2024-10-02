@@ -3,10 +3,14 @@
 #include <QDataStream>
 #include <QHostAddress>
 #include <QIODevice>
+#include <QVector>
 
 Server::Server()
 {
-    listen(QHostAddress::LocalHost, 2222);
+    if (!listen(QHostAddress::Any, 8080))
+    {
+        qDebug() << "Ошибка прослушивания на порту!";
+    }
     m_dbManager = new DataBaseManager();
 }
 
@@ -14,7 +18,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
 {
     m_socket = new QTcpSocket();
     m_socket->setSocketDescriptor(socketDescriptor);
-
+    qDebug() << "New conenction! " << socketDescriptor;
     connect(m_socket, &QTcpSocket::readyRead, this, &Server::slotReadyRead);
     m_sockets.push_back(m_socket);
 }
@@ -50,7 +54,11 @@ void Server::slotReadyRead()
             if (isLogin)
             {
                 qDebug() << "Login";
-                args.push_back(m_dbManager->get100Message());
+                QVector<QString> messages = m_dbManager->get100Message();
+                for (const auto& msg : messages)
+                {
+                    args.push_back(msg);
+                }
             }
             else
             {
@@ -72,7 +80,8 @@ void Server::slotReadyRead()
 void Server::sendToAll(qint8 code, const QVariantList& args)
 {
     m_data.clear();
-    qDebug() << "send to all " << code << args;
+    qDebug() << "send to all ";
+
 
     QDataStream out(&m_data, QIODevice::WriteOnly);
     out << code;
@@ -87,7 +96,6 @@ void Server::sendToAll(qint8 code, const QVariantList& args)
 void Server::sendToClient(qint8 code, QTcpSocket* client, const QVariantList& args)
 {
     m_data.clear();
-    qDebug() << code << args;
 
     QDataStream out(&m_data, QIODevice::WriteOnly);
     out << code;
@@ -98,7 +106,13 @@ void Server::sendToClient(qint8 code, QTcpSocket* client, const QVariantList& ar
     else if (code == 1)
     {
         out << args[0].toBool();
-        out << args[1].toString();
+        out << args.size();
+        qDebug() << args.size();
+        for(int i = 1; i < args.size(); ++i)
+        {
+            out << args[i].toString();
+        }
+
     }
     else if (code == 2)
     {

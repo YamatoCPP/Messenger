@@ -8,25 +8,23 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->label->setStyleSheet("QLabel {background-color : white;}");
     ui->lineEdit->setStyleSheet("background-color : white;");
     ui->pushButton->setStyleSheet("background-color : white;");
-    ui->label->setAlignment(Qt::AlignTop);
 
     QIcon icon("Images/Icon.png");
     setWindowIcon(icon);
-
-    setStyleSheet("background-color : violet;");
 }
 
 void MainWindow::addMessage(QString str)
 {
-    ui->label->setText(ui->label->text() + str + "\n");
-}
+    message* msg = new message(str);
+    ui->verticalLayout->addWidget(msg);
+    ui->verticalLayout->setAlignment(msg, Qt::AlignLeft);
+    }
 
 void MainWindow::on_pushButton_clicked()
 {
-    if (ui->lineEdit->text() == "") return;
+    if (ui->lineEdit->text().isEmpty()) return;
     sendToServer(ui->lineEdit->text());
     ui->lineEdit->clear();
 }
@@ -34,7 +32,7 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_lineEdit_returnPressed()
 {
-    if (ui->lineEdit->text() == "") return;
+    if (ui->lineEdit->text().isEmpty()) return;
     sendToServer(ui->lineEdit->text());
     ui->lineEdit->clear();
 }

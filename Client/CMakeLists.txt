@@ -43,6 +43,7 @@ else()
             client.h client.cpp
             registration.h registration.cpp registration.ui
             Images/Icon.ico
+            message.h message.cpp
 
 
         )
