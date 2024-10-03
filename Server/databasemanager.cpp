@@ -75,17 +75,17 @@ void DataBaseManager::addMessage(QString name, QString text)
     m_messages.close();
 }
 
-QVector<QString> DataBaseManager::get100Message()
+QJsonArray DataBaseManager::get100Message()
 {
     m_messages.open();
     QSqlQuery getMessage(m_messages);
     getMessage.prepare("SELECT Name, Text FROM Messages");
 
-    QVector<QString> messages;
+    QJsonArray messages;
     if (getMessage.exec())
     {
         while (getMessage.next()) {
-            messages.push_back(getMessage.value(0).toString()
+            messages.append(getMessage.value(0).toString()
                             + ":\n"
                             + getMessage.value(1).toString()
                             + "\n");
@@ -96,7 +96,7 @@ QVector<QString> DataBaseManager::get100Message()
         qDebug() << "Get message error";
 
     }
-    qDebug() << messages;
+
     m_messages.close();
     return messages;
 }

@@ -3,7 +3,7 @@
 
 #include <QtSql/QSqlDatabase>
 #include <QString>
-#include <QVector>
+#include <QJsonArray>
 
 class DataBaseManager
 {
@@ -12,7 +12,7 @@ public:
     bool tryLogin(QString name, QString password);
     bool tryRegistration(QString name, QString password);
     void addMessage(QString name, QString text);
-    QVector<QString> get100Message();
+    QJsonArray get100Message();
 private:
     QSqlDatabase m_users;
     QSqlDatabase m_messages;

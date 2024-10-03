@@ -8,8 +8,9 @@
 #include <QVector>
 #include <QByteArray>
 #include <QString>
-#include <QVariantList>
-#include <QVariant>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 class Server : public QTcpServer
 {
@@ -20,8 +21,8 @@ public slots:
     void slotReadyRead();
     void incomingConnection(qintptr socketDescriptor);
 private:
-    void sendToAll(qint8 code, const QVariantList& args);
-    void sendToClient(qint8 code, QTcpSocket* client, const QVariantList& args);
+    void sendToClient(const QJsonDocument& args);
+    void sendToClient(QTcpSocket* client, const QJsonDocument& args);
     QTcpSocket* m_socket;
     QByteArray m_data;
     QVector<QTcpSocket*> m_sockets;

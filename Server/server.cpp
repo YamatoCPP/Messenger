@@ -3,7 +3,6 @@
 #include <QDataStream>
 #include <QHostAddress>
 #include <QIODevice>
-#include <QVector>
 
 Server::Server()
 {
@@ -27,96 +26,89 @@ void Server::slotReadyRead()
     qDebug() << "Get message";
 
     m_socket = (QTcpSocket*)sender();
-    QDataStream in(m_socket);
-    if (in.status() == QDataStream::Ok)
+    QByteArray data = m_socket->readAll();
+
+    QJsonDocument inData = QJsonDocument::fromJson(data);
+    QJsonObject jsonIn = inData.object();
+
+
+    if (!inData.isNull())
     {
-        qint8 code;
-        in >> code;
-        QVariantList args;
-        if (code == 0)
+        int code = jsonIn["code"].toInt();
+
+        QJsonDocument outData;
+        QJsonObject jsonOut;
+        jsonOut["code"] = code;
+
+        switch (code)
+        {
+        case 0:
         {
             qDebug() << "Get message";
-            QString name;
-            QString text;
-            in >> name;
-            in >> text;
-            args.push_back(QString(name + ": " + text));
+
+            QString name{jsonIn["name"].toString()};
+            QString text{jsonIn["text"].toString()};
+            jsonOut["name"] = name;
+            jsonOut["text"] = text;
+
             m_dbManager->addMessage(name, text);
-            sendToAll(code, args);
+
+            outData = QJsonDocument(jsonOut);
+            sendToClient(outData);
+
+            break;
         }
-        else if (code == 1)
+        case 1:
         {
-            QString name;
-            QString password;
-            in >> name >> password;
-            bool isLogin = m_dbManager->tryLogin(name, password);
-            args.push_back(isLogin);
+            QString nameLogin {jsonIn["name"].toString()};
+            QString passwordLogin {jsonIn["password"].toString()};
+
+            bool isLogin = m_dbManager->tryLogin(nameLogin, passwordLogin);
+
+            jsonOut["isLogin"] = isLogin;
             if (isLogin)
             {
                 qDebug() << "Login";
-                QVector<QString> messages = m_dbManager->get100Message();
-                for (const auto& msg : messages)
-                {
-                    args.push_back(msg);
-                }
+                jsonOut["messages"] = m_dbManager->get100Message();
             }
-            else
-            {
-                args.push_back("");
-            }
-            sendToClient(code, m_socket, args);
+
+            outData = QJsonDocument(jsonOut);
+            sendToClient(m_socket, outData);
+
+            break;
         }
-        else if (code == 2)
+        case 2:
         {
-            QString name;
-            QString password;
-            in >> name >> password;
-            args.push_back(m_dbManager->tryRegistration(name, password));
-            sendToClient(code, m_socket, args);
+            QString nameRegistration {jsonIn["name"].toString()};
+            QString passwordRegistration {jsonIn["password"].toString()};
+
+            jsonOut["isRegistration"] = m_dbManager->tryRegistration(nameRegistration, passwordRegistration);
+
+            outData = QJsonDocument(jsonOut);
+            sendToClient(outData);
+
+            break;
+        }
         }
     }
 }
 
-void Server::sendToAll(qint8 code, const QVariantList& args)
+void Server::sendToClient(const QJsonDocument& args)
 {
     m_data.clear();
-    qDebug() << "send to all ";
 
-
-    QDataStream out(&m_data, QIODevice::WriteOnly);
-    out << code;
-    out << args[0].toString();
-
+    m_data = args.toJson();
     for (int i = 0; i < m_sockets.size(); ++i)
     {
         m_sockets[i]->write(m_data);
+        m_sockets[i]->flush();
     }
 }
 
-void Server::sendToClient(qint8 code, QTcpSocket* client, const QVariantList& args)
+void Server::sendToClient(QTcpSocket* client, const QJsonDocument& args)
 {
     m_data.clear();
-
-    QDataStream out(&m_data, QIODevice::WriteOnly);
-    out << code;
-    if (code == 0)
-    {
-        out << args[0].toString();
-    }
-    else if (code == 1)
-    {
-        out << args[0].toBool();
-        out << args.size();
-        qDebug() << args.size();
-        for(int i = 1; i < args.size(); ++i)
-        {
-            out << args[i].toString();
-        }
-
-    }
-    else if (code == 2)
-    {
-        out << args[0].toBool();
-    }
+    m_data = args.toJson();
     client->write(m_data);
+    client->flush();
 }

@@ -9,6 +9,9 @@
 #include <QHostAddress>
 #include <QIcon>
 #include <QVector>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonArray>
 
 Client::Client(QObject* parent)
     : QObject(parent)
@@ -20,11 +23,11 @@ Client::Client(QObject* parent)
     m_socket = new QTcpSocket(this);
     m_socket->connectToHost(QHostAddress::Any, 8080);
 
-    if (!m_socket->waitForConnected())
+    if (!m_socket->waitForConnected(5000))
     {
         qDebug() << "Not connect\n";
+        return;
     }
-    QObject::connect(m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
 
     MainWindow* mainWindow = new MainWindow();
     LoginForm* loginForm = new LoginForm();
@@ -34,6 +37,7 @@ Client::Client(QObject* parent)
     m_windows->addWidget(registrationForm);
     m_windows->addWidget(mainWindow);
 
+    QObject::connect(m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
     QObject::connect(mainWindow, &MainWindow::sendToServer, this, &Client::sendToServer);
     QObject::connect(loginForm, &LoginForm::login, this, &Client::login);
     QObject::connect(loginForm, &LoginForm::toRegistrForm, [this](){ m_windows->setCurrentIndex(1); });
@@ -43,57 +47,35 @@ Client::Client(QObject* parent)
     m_windows->show();
 }
 
-void Client::login(QString name, QString password)
-{
-    qDebug() << "try login with " + name + " " + password;
-
-    m_data.clear();
-    QDataStream out(&m_data, QIODevice::WriteOnly);
-    qint8 code = 1;
-    out << code << name << password;
-
-    m_userName = name;
-    m_socket->write(m_data);
-}
-
-void Client::registration(QString name, QString password)
-{
-    m_data.clear();
-    QDataStream out(&m_data, QIODevice::WriteOnly);
-    qint8 code = 2;
-    out << code << name << password;
-
-    m_socket->write(m_data);
-}
-
 void Client::slotReadyRead()
 {
     qDebug() << "Get data";
-    QDataStream in(m_socket);
-    if (in.status() == QDataStream::Ok)
-    {
-        qint8 code;
-        in >> code;
-        if (code == 0)
-        {
-            QString msg;
-            in >> msg;
-            ((MainWindow*)m_windows->widget(2))->addMessage(msg);
-        }
-        else if (code == 1)
-        {
-            bool isLogin;
-            in >> isLogin;
+    QByteArray data = m_socket->readAll();
+    QJsonDocument inData = QJsonDocument::fromJson(data);
+    QJsonObject json = inData.object();
 
-            if (isLogin)
+    if (!inData.isNull())
+    {
+        int code = json["code"].toInt();
+
+        switch (code)
+        {
+        case 0:
+        {
+            QString msg = json["text"].toString();
+            ((MainWindow*)m_windows->widget(2))->addMessage(msg);
+
+            break;
+        }
+        case 1:
+        {
+            if (json["isLogin"].toBool())
             {
-                int size;
-                in >> size;
-                qDebug() << size;
-                QString str;
-                for (int i = 0; i < size; ++i)
+                QJsonArray msgArray = json["messages"].toArray();
+
+                for (const auto& i : msgArray)
                 {
-                    in >> str;
+                    QString str = i.toString();
                     if (!str.isEmpty())
                     {
                         ((MainWindow*)m_windows->widget(2))->addMessage(str);
@@ -103,23 +85,20 @@ void Client::slotReadyRead()
             }
             else
             {
-                qDebug() << "Hui";
+                qDebug() << "Not login";
             }
         }
-        else
+        case 2:
         {
-            bool isRegist;
-            in >> isRegist;
-            qDebug() << isRegist;
-            if (isRegist)
+            if (json["isRegistration"].toBool())
             {
                 m_windows->setCurrentIndex(0);
-                ((RegistrationForm*)m_windows->widget(1))->setError("");
             }
             else
             {
                 ((RegistrationForm*)m_windows->widget(1))->setError("Не удалось зарегаться");
             }
+        }
         }
     }
 }
@@ -127,8 +106,45 @@ void Client::slotReadyRead()
 void Client::sendToServer(QString str)
 {
     m_data.clear();
-    QDataStream out(&m_data, QIODevice::WriteOnly);
-    qint8 code = 0;
-    out << code << m_userName << str;
+
+    QJsonObject json;
+    json["code"] = 0;
+    json["name"] = m_userName;
+    json["text"] = str;
+
+    QJsonDocument outData(json);
+    m_data = outData.toJson();
     m_socket->write(m_data);
+    m_socket->flush();
+}
+
+void Client::login(QString name, QString password)
+{
+    qDebug() << "try login with " + name + " " + password;
+    m_userName = name;
+
+    QJsonObject json;
+    json["code"] = 1;
+    json["name"] = name;
+    json["password"] = password;
+
+    QJsonDocument outData(json);
+    m_data = outData.toJson();
+    m_socket->write(m_data);
+    m_socket->flush();
+}
+
+void Client::registration(QString name, QString password)
+{
+    m_data.clear();
+
+    QJsonObject json;
+    json["code"] = 2;
+    json["name"] = name;
+    json["password"] = password;
+
+    QJsonDocument outData(json);
+    m_data = outData.toJson();
+    m_socket->write(m_data);
+    m_socket->flush();
 }
