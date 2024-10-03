@@ -11,6 +11,7 @@ message::message(QString text)
                           "background-color : white;"
                           "border-radius : 20px; }");
     m_text->adjustSize();
+    m_text->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     m_text->setWordWrap(true);
     m_text->setContentsMargins(10,5,10,0);
 

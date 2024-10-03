@@ -62,7 +62,8 @@ void Client::slotReadyRead()
         {
         case 0:
         {
-            QString msg = json["text"].toString();
+            QString msg = json["name"].toString() + "\n" +
+                          json["text"].toString();
             ((MainWindow*)m_windows->widget(2))->addMessage(msg);
 
             break;

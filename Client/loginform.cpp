@@ -16,6 +16,11 @@ LoginForm::LoginForm(QWidget *parent)
     ui->label_2->setStyleSheet("background-color : rgba(255,255,255,0);");
     ui->pushButton->setStyleSheet("background-color : rgba(255,255,255,0);");
     ui->pushButton_2->setStyleSheet("background-color : rgba(255,255,255,0);");
+
+    ui->lineEdit->setPlaceholderText("Имя");
+    ui->lineEdit_2->setPlaceholderText("Пароль");
+    ui->lineEdit_2->setEchoMode(QLineEdit::Password);
+
 }
 
 LoginForm::~LoginForm()

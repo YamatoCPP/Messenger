@@ -19,8 +19,8 @@ void MainWindow::addMessage(QString str)
 {
     message* msg = new message(str);
     ui->verticalLayout->addWidget(msg);
-    ui->verticalLayout->setAlignment(msg, Qt::AlignLeft);
-    }
+    ui->verticalLayout->setAlignment(msg, Qt::AlignLeft | Qt::AlignTop);
+}
 
 void MainWindow::on_pushButton_clicked()
 {

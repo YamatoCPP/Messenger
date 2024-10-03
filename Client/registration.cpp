@@ -14,6 +14,12 @@ RegistrationForm::RegistrationForm(QWidget *parent) :
     ui->passwordlbl->setStyleSheet("background-color: rgba(255,255,255,0);");
     ui->passwordlbl2->setStyleSheet("background-color: rgba(255,255,255,0);");
     ui->registrationbtn->setStyleSheet("background-color: rgba(255,255,255,0);");
+
+    ui->nameline->setPlaceholderText("Имя");
+    ui->passwordline->setPlaceholderText("Пароль");
+    ui->passwordline2->setPlaceholderText("Пароль");
+    ui->passwordline->setEchoMode(QLineEdit::Password);
+    ui->passwordline2->setEchoMode(QLineEdit::Password);
 }
 
 RegistrationForm::~RegistrationForm()
